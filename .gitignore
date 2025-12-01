@@ -1,0 +1,13 @@
+# macOS
+.DS_Store
+
+# Build artifacts
+attack_on_ball
+attack_on_ball_test
+*.o
+*.obj
+*.exe
+
+# Editor settings
+.vscode/
+.idea/
