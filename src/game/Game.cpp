@@ -33,6 +33,10 @@ bool Game::Init() {
     }
 
     previous_ticks_ = SDL_GetTicks();
+    if (!player_.LoadTexture(renderer_, "assets/characters/ghost-v1.bmp")) {
+        Shutdown();
+        return false;
+    }
     return true;
 }
 
@@ -69,18 +73,25 @@ void Game::ProcessInput() {
 
 void Game::Update(float delta_seconds) {
     player_.Update(delta_seconds);
+    ball_.Update(delta_seconds);
 }
 
 void Game::Render() {
     SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
     SDL_RenderClear(renderer_);
 
+    SDL_Rect ground{0, constants::kGroundTop, constants::kScreenWidth, constants::kGroundHeight};
+    SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
+    SDL_RenderFillRect(renderer_, &ground);
+
     player_.Render(renderer_);
+    ball_.Render(renderer_);
 
     SDL_RenderPresent(renderer_);
 }
 
 void Game::Shutdown() {
+    player_.UnloadTexture();
     if (renderer_) {
         SDL_DestroyRenderer(renderer_);
         renderer_ = nullptr;

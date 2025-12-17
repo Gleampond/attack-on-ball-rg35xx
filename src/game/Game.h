@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 
+#include "Ball.h"
 #include "Player.h"
 
 class Game {
@@ -23,5 +24,6 @@ private:
     SDL_Renderer* renderer_{nullptr};
     bool is_running_{true};
     Player player_{};
+    Ball ball_{};
     Uint32 previous_ticks_{0};
 };
