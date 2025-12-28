@@ -1,7 +1,100 @@
 // Game loop implementation.
 #include "Game.h"
 
+#include <SDL2/SDL_image.h>
+#include <array>
+#include <cstdio>
+#include <string>
+
 #include "Constants.h"
+
+namespace {
+void DrawSegment(SDL_Renderer* renderer, int x, int y, int w, int h) {
+    SDL_Rect rect{x, y, w, h};
+    SDL_RenderFillRect(renderer, &rect);
+}
+
+void DrawDigit(SDL_Renderer* renderer, char digit, int x, int y, int length, int thickness) {
+    constexpr std::array<int, 10> kSegments = {
+        0b1110111,  // 0
+        0b0010010,  // 1
+        0b1011101,  // 2
+        0b1011011,  // 3
+        0b0111010,  // 4
+        0b1101011,  // 5
+        0b1101111,  // 6
+        0b1010010,  // 7
+        0b1111111,  // 8
+        0b1111011   // 9
+    };
+
+    if (digit < '0' || digit > '9') {
+        return;
+    }
+    const int mask = kSegments[digit - '0'];
+    const int vertical = length;
+    const int horizontal = length + thickness;
+
+    if (mask & 0b1000000) DrawSegment(renderer, x + thickness, y, horizontal, thickness);
+    if (mask & 0b0100000) DrawSegment(renderer, x, y + thickness, thickness, vertical);
+    if (mask & 0b0010000) DrawSegment(renderer, x + horizontal + thickness, y + thickness, thickness, vertical);
+    if (mask & 0b0001000) DrawSegment(renderer, x + thickness, y + vertical + thickness, horizontal, thickness);
+    if (mask & 0b0000100) DrawSegment(renderer, x, y + vertical + 2 * thickness, thickness, vertical);
+    if (mask & 0b0000010) DrawSegment(renderer, x + horizontal + thickness, y + vertical + 2 * thickness, thickness, vertical);
+    if (mask & 0b0000001) DrawSegment(renderer, x + thickness, y + 2 * vertical + 2 * thickness, horizontal, thickness);
+}
+
+int DigitWidth(int length, int thickness) {
+    return length + thickness * 2 + length;
+}
+
+int DigitHeight(int length, int thickness) {
+    return (length * 2) + (thickness * 3);
+}
+
+void RenderTimer(SDL_Renderer* renderer, float elapsed_seconds) {
+    const int centi = static_cast<int>(elapsed_seconds * 100.0f);
+    const int seconds = centi / 100;
+    const int hundredths = centi % 100;
+
+    char buffer[16];
+    std::snprintf(buffer, sizeof(buffer), "%d.%02d", seconds, hundredths);
+    const std::string text(buffer);
+
+    const int length = 10;
+    const int thickness = 3;
+    const int spacing = 4;
+    const int dot_size = thickness;
+    const int dot_offset = DigitHeight(length, thickness) - dot_size;
+
+    int total_width = 0;
+    for (char ch : text) {
+        if (ch == '.') {
+            total_width += dot_size + spacing;
+        } else {
+            total_width += DigitWidth(length, thickness) + spacing;
+        }
+    }
+    if (total_width > 0) {
+        total_width -= spacing;
+    }
+
+    const int start_x = (constants::kScreenWidth - total_width) / 2;
+    const int start_y = 8;
+
+    SDL_SetRenderDrawColor(renderer, 20, 20, 20, 255);
+    int cursor_x = start_x;
+    for (char ch : text) {
+        if (ch == '.') {
+            DrawSegment(renderer, cursor_x, start_y + dot_offset, dot_size, dot_size);
+            cursor_x += dot_size + spacing;
+            continue;
+        }
+        DrawDigit(renderer, ch, cursor_x, start_y, length, thickness);
+        cursor_x += DigitWidth(length, thickness) + spacing;
+    }
+}
+}  // namespace
 
 Game::Game() = default;
 Game::~Game() {
@@ -10,6 +103,11 @@ Game::~Game() {
 
 bool Game::Init() {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+        return false;
+    }
+
+    if ((IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG) != IMG_INIT_PNG) {
+        Shutdown();
         return false;
     }
 
@@ -33,7 +131,11 @@ bool Game::Init() {
     }
 
     previous_ticks_ = SDL_GetTicks();
-    if (!player_.LoadTexture(renderer_, "assets/characters/ghost-v1.bmp")) {
+    if (!player_.LoadTexture(renderer_, "assets/characters/ghost.png")) {
+        Shutdown();
+        return false;
+    }
+    if (!ball_.LoadTexture(renderer_, "assets/balls/ball_green.png")) {
         Shutdown();
         return false;
     }
@@ -72,6 +174,7 @@ void Game::ProcessInput() {
 }
 
 void Game::Update(float delta_seconds) {
+    elapsed_time_ += delta_seconds;
     player_.Update(delta_seconds);
     ball_.Update(delta_seconds);
 }
@@ -86,11 +189,13 @@ void Game::Render() {
 
     player_.Render(renderer_);
     ball_.Render(renderer_);
+    RenderTimer(renderer_, elapsed_time_);
 
     SDL_RenderPresent(renderer_);
 }
 
 void Game::Shutdown() {
+    ball_.UnloadTexture();
     player_.UnloadTexture();
     if (renderer_) {
         SDL_DestroyRenderer(renderer_);
@@ -100,5 +205,6 @@ void Game::Shutdown() {
         SDL_DestroyWindow(window_);
         window_ = nullptr;
     }
+    IMG_Quit();
     SDL_Quit();
 }

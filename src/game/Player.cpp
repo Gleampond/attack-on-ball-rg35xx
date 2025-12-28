@@ -1,13 +1,15 @@
 // Implementation of player movement and drawing.
 #include "Player.h"
 
+#include <SDL2/SDL_image.h>
+
 #include "Constants.h"
 
 Player::Player() {
     rect_.w = 64;
     rect_.h = 64;
     rect_.x = (constants::kScreenWidth / 2) - (rect_.w / 2);
-    rect_.y = constants::kScreenHeight - rect_.h - 40;
+    rect_.y = constants::kGroundTop - rect_.h;
 }
 
 Player::~Player() {
@@ -17,7 +19,7 @@ Player::~Player() {
 bool Player::LoadTexture(SDL_Renderer* renderer, const std::string& path) {
     FreeTexture();
 
-    SDL_Surface* surface = SDL_LoadBMP(path.c_str());
+    SDL_Surface* surface = IMG_Load(path.c_str());
     if (!surface) {
         return false;
     }
@@ -31,7 +33,7 @@ bool Player::LoadTexture(SDL_Renderer* renderer, const std::string& path) {
     rect_.w = 64;
     rect_.h = 64;
     rect_.x = (constants::kScreenWidth / 2) - (rect_.w / 2);
-    rect_.y = constants::kScreenHeight - rect_.h - 40;
+    rect_.y = constants::kGroundTop - rect_.h;
 
     SDL_FreeSurface(surface);
     return true;
@@ -60,11 +62,6 @@ void Player::Update(float delta_seconds) {
 }
 
 void Player::Render(SDL_Renderer* renderer) const {
-    // Pink outline behind the player sprite for visibility.
-    SDL_Rect outline{rect_.x - 2, rect_.y - 2, rect_.w + 4, rect_.h + 4};
-    SDL_SetRenderDrawColor(renderer, 255, 105, 180, 255);
-    SDL_RenderFillRect(renderer, &outline);
-
     if (texture_) {
         SDL_RenderCopy(renderer, texture_, nullptr, &rect_);
     } else {

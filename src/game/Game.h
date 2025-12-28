@@ -26,4 +26,5 @@ private:
     Player player_{};
     Ball ball_{};
     Uint32 previous_ticks_{0};
+    float elapsed_time_{0.0f};
 };
