@@ -1,10 +1,11 @@
-// Core game loop management.
 #pragma once
 
 #include <SDL2/SDL.h>
+#include <memory>
 
-#include "Ball.h"
-#include "Player.h"
+#include "Assets.h"
+#include "RenderContext.h"
+#include "State.h"
 
 class Game {
 public:
@@ -13,18 +14,26 @@ public:
 
     bool Init();
     void Run();
-
-private:
-    void ProcessInput();
-    void Update(float delta_seconds);
-    void Render();
     void Shutdown();
 
-    SDL_Window* window_{nullptr};
-    SDL_Renderer* renderer_{nullptr};
-    bool is_running_{true};
-    Player player_{};
-    Ball ball_{};
-    Uint32 previous_ticks_{0};
-    float elapsed_time_{0.0f};
+    void ChangeState(std::unique_ptr<State> next_state);
+
+    SDL_Renderer* Renderer() { return renderer_; }
+    SDL_Window* Window() { return window_; }
+    Assets& GetAssets() { return assets_; }
+    const RenderContext& RenderCtx() const { return render_ctx_; }
+    RenderContext& RenderCtx() { return render_ctx_; }
+
+    void Quit() { running_ = false; }
+
+private:
+    void ProcessEvents();
+
+    SDL_Window* window_ = nullptr;
+    SDL_Renderer* renderer_ = nullptr;
+    bool running_ = true;
+
+    Assets assets_{};
+    RenderContext render_ctx_{};
+    std::unique_ptr<State> state_;
 };
