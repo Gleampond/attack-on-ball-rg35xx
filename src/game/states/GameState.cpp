@@ -20,6 +20,10 @@ constexpr float kNumberGravity = 950.0f;
 constexpr float kGroundY = 800.0f - 204.0f;
 constexpr float kGroundHeight = 184.0f;
 constexpr float kGroundOffset = 20.0f;
+constexpr float kMoveThreshold = 1.0f;
+
+const char* kRunAnimations[] = {"Run0", "Run1", "Run2", "Run3", "RunSmile"};
+const char* kIdleAnimations[] = {"Idle", "IdleSmile"};
 
 float RandomRange(float min_value, float max_value) {
     static std::mt19937 rng{static_cast<unsigned int>(SDL_GetTicks())};
@@ -35,6 +39,10 @@ int RandomInt(int min_value, int max_value) {
 
 bool RectOverlap(const SDL_FRect& a, const SDL_FRect& b) {
     return !(a.x > b.x + b.w || a.x + a.w < b.x || a.y > b.y + b.h || a.y + a.h < b.y);
+}
+
+std::string PickRandomAnimation(const char* const* options, int count) {
+    return options[RandomInt(0, count - 1)];
 }
 }
 
@@ -65,6 +73,16 @@ void GameState::Enter(Game& game) {
 
     ResetHero();
     UpdateGauge();
+
+    if (!stickman_loaded_) {
+        stickman_loaded_ = stickman_.Load("assets/Stickman.json", "assets/Stickman.atlas");
+    }
+    was_moving_ = false;
+    hero_animation_ = "Idle";
+    hero_facing_left_ = false;
+    if (stickman_loaded_) {
+        stickman_.SetAnimation(hero_animation_, true, true);
+    }
 }
 
 void GameState::Exit(Game& game) {
@@ -76,10 +94,19 @@ void GameState::HandleEvent(Game& game, const SDL_Event& event) {
         const SDL_FPoint pos = game.RenderCtx().ScreenToWorld(event.button.x, event.button.y);
         mouse_down_ = true;
         mouse_dir_ = (pos.x > 1216.0f / 2.0f) ? 1.0f : -1.0f;
+        hero_facing_left_ = (mouse_dir_ < 0.0f);
+        if (!dead_ && stickman_loaded_) {
+            hero_animation_ = PickRandomAnimation(kRunAnimations, 5);
+            stickman_.SetAnimation(hero_animation_, true, true);
+        }
     }
     if (event.type == SDL_MOUSEBUTTONUP) {
         mouse_down_ = false;
         mouse_dir_ = 0.0f;
+        if (!dead_ && stickman_loaded_) {
+            hero_animation_ = PickRandomAnimation(kIdleAnimations, 2);
+            stickman_.SetAnimation(hero_animation_, true, true);
+        }
     }
 }
 
@@ -88,6 +115,19 @@ void GameState::Update(Game& game, float delta_seconds) {
 
     if (!dead_) {
         HandleInput(game, delta_seconds);
+        const bool is_moving = std::abs(hero_.velocity.x) > kMoveThreshold;
+        if (stickman_loaded_ && is_moving != was_moving_) {
+            if (is_moving) {
+                hero_animation_ = PickRandomAnimation(kRunAnimations, 5);
+            } else {
+                hero_animation_ = PickRandomAnimation(kIdleAnimations, 2);
+            }
+            stickman_.SetAnimation(hero_animation_, true, true);
+        }
+        was_moving_ = is_moving;
+        if (stickman_loaded_) {
+            stickman_.Update(delta_seconds);
+        }
         UpdateHero(delta_seconds);
         UpdateBalls(delta_seconds);
         UpdateNumbers(game, delta_seconds);
@@ -201,8 +241,13 @@ void GameState::Render(Game& game) {
     }
 
     if (hero_.alive) {
-        DrawTextureCentered(renderer, ctx, assets.GetTexture("stickman"), hero_.pos.x, hero_.pos.y, 1.5f, 1.5f, SDL_Color{255, 255, 255, 255});
-        DrawTextureCentered(renderer, ctx, assets.GetTexture("shadow"), hero_.pos.x, hero_.pos.y + 30.0f, 1.0f, 1.0f, SDL_Color{255, 255, 255, 255});
+        if (stickman_loaded_) {
+            stickman_.Draw(renderer, ctx, assets.GetTexture("stickman"), hero_.pos.x, hero_.pos.y, 1.5f,
+                           SDL_Color{255, 255, 255, 255}, hero_facing_left_);
+        } else {
+            DrawTextureCentered(renderer, ctx, assets.GetTexture("stickman"), hero_.pos.x, hero_.pos.y, 1.5f, 1.5f, SDL_Color{255, 255, 255, 255});
+        }
+        DrawTextureCentered(renderer, ctx, assets.GetTexture("shadow"), hero_.pos.x, hero_.pos.y + 20.0f, 1.0f, 1.0f, SDL_Color{255, 255, 255, 255});
     }
 
     for (const auto& particle : blood_particles_) {
@@ -274,6 +319,11 @@ void GameState::HandleInput(Game& game, float delta_seconds) {
     }
     hero_.dir = dir;
     hero_.velocity.x = hero_.dir * kHeroSpeed;
+    if (hero_.dir < 0.0f) {
+        hero_facing_left_ = true;
+    } else if (hero_.dir > 0.0f) {
+        hero_facing_left_ = false;
+    }
 }
 
 void GameState::UpdateHero(float delta_seconds) {

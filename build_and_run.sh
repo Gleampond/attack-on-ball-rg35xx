@@ -6,7 +6,9 @@ g++ -std=c++17 \
   src/game/Game.cpp \
   src/game/Assets.cpp \
   src/game/BitmapFont.cpp \
+  src/game/Json.cpp \
   src/game/ScoreStorage.cpp \
+  src/game/StickmanSkeleton.cpp \
   src/game/states/BootState.cpp \
   src/game/states/PreloadState.cpp \
   src/game/states/MenuState.cpp \

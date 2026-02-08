@@ -1,9 +1,11 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#include <string>
 #include <vector>
 
 #include "game/State.h"
+#include "game/StickmanSkeleton.h"
 
 class GameState : public State {
 public:
@@ -81,6 +83,11 @@ private:
     float effect_blood_timer_ = 0.0f;
     float red_border_timer_ = 0.0f;
     float shake_timer_ = 0.0f;
+    StickmanSkeleton stickman_;
+    bool stickman_loaded_ = false;
+    bool was_moving_ = false;
+    std::string hero_animation_;
+    bool hero_facing_left_ = false;
 
     void ResetHero();
     void SpawnBall(Game& game);

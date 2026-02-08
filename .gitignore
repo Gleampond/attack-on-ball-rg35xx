@@ -11,3 +11,6 @@ attack_on_ball_test
 # Editor settings
 .vscode/
 .idea/
+
+/reference/
+/attackonball
