@@ -1,9 +1,11 @@
 #pragma once
 
+#include <SDL2/SDL.h>
 #include <string>
 
 #include "game/ScoreStorage.h"
 #include "game/State.h"
+#include "game/StickmanSkeleton.h"
 
 class MenuState : public State {
 public:
@@ -29,7 +31,14 @@ private:
     int best_score_ = 0;
     float title_x_ = -400.0f;
     float buttons_y_ = 1100.0f;
+    float score_alpha_ = 1.0f;
+    bool start_transition_ = false;
+    float start_transition_timer_ = 0.0f;
     int land_index_ = 0;
+    float score_color_timer_ = 0.0f;
+    SDL_Color score_color_{0, 0, 0, 255};
+    StickmanSkeleton stickman_{};
+    bool stickman_loaded_ = false;
 
     Button gamecenter_{};
     Button share_{};

@@ -5,7 +5,7 @@
     <page id="0" file="NumberScoreEnd.png"/>
   </pages>
   <chars count="10">
-    <char id="32" x="495" y="0" width="55" height="63" xoffset="0" yoffset="0" xadvance="55" page="0" chnl="55"/>
+    <char id="57" x="495" y="0" width="55" height="63" xoffset="0" yoffset="0" xadvance="55" page="0" chnl="55"/>
     <char id="48" x="0" y="0" width="55" height="63" xoffset="0" yoffset="0" xadvance="55" page="0" chnl="55"/>
     <char id="49" x="55" y="0" width="55" height="63" xoffset="0" yoffset="0" xadvance="55" page="0" chnl="55"/>
     <char id="50" x="110" y="0" width="55" height="63" xoffset="0" yoffset="0" xadvance="55" page="0" chnl="55"/>

@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "game/ScoreStorage.h"
 #include "game/State.h"
 #include "game/StickmanSkeleton.h"
 
@@ -42,6 +43,8 @@ private:
         int value = 1;
         bool alive = true;
         bool collecting = false;
+        float flash_timer = 0.0f;
+        SDL_Color tint{255, 255, 255, 255};
     };
 
     struct Particle {
@@ -51,6 +54,15 @@ private:
         float scale = 1.0f;
         int texture_index = 0;
         SDL_Color color{255, 255, 255, 255};
+    };
+
+    struct Button {
+        float x = 0.0f;
+        float y = 0.0f;
+        float w = 0.0f;
+        float h = 0.0f;
+        bool pressed = false;
+        std::string key_base;
     };
 
     int best_score_ = 0;
@@ -69,10 +81,16 @@ private:
     float gauge_timer_ = 0.0f;
     float floor_timer_ = 0.0f;
     float floor_flash_timer_ = 0.0f;
+    float floor_flash_color_timer_ = 0.0f;
     bool floor_flashing_ = false;
+    SDL_Color floor_flash_tint_{255, 255, 255, 255};
 
     int gauge_count_ = 0;
     float gauge_head_x_ = 0.0f;
+    float gauge_head_target_x_ = 0.0f;
+    SDL_Color gauge_tint_{255, 255, 255, 255};
+    SDL_Color gauge_head_tint_{255, 255, 255, 255};
+    int gauge_flash_ticks_ = 0;
 
     bool mouse_down_ = false;
     float mouse_dir_ = 0.0f;
@@ -88,6 +106,15 @@ private:
     bool was_moving_ = false;
     std::string hero_animation_;
     bool hero_facing_left_ = false;
+    bool result_overlay_active_ = false;
+    bool result_best_updated_ = false;
+    float result_elapsed_ = 0.0f;
+    float your_flash_timer_ = 0.0f;
+    SDL_Color your_flash_color_{0, 0, 0, 255};
+    Button result_gamecenter_{};
+    Button result_share_{};
+    Button result_play_{};
+    ScoreStorage storage_{"save.dat"};
 
     void ResetHero();
     void SpawnBall(Game& game);
@@ -102,6 +129,10 @@ private:
     void CheckCollisions(Game& game);
     void OnDeath(Game& game);
     void StartEffects();
+    void StartResultOverlay(Game& game);
+    bool IsInsideButton(const Button& button, float x, float y) const;
+    void UpdateResultOverlay(float delta_seconds);
+    void RenderResultOverlay(Game& game, const RenderContext& ctx);
 
     SDL_FRect LandRect() const;
     SDL_FRect HeroRect() const;

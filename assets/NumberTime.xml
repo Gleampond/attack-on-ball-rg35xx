@@ -5,7 +5,7 @@
     <page id="0" file="NumberTime.png"/>
   </pages>
   <chars count="10">
-    <char id="32" x="198" y="0" width="22" height="25" xoffset="0" yoffset="0" xadvance="22" page="0" chnl="22"/>
+    <char id="57" x="198" y="0" width="22" height="25" xoffset="0" yoffset="0" xadvance="22" page="0" chnl="22"/>
     <char id="48" x="0" y="0" width="22" height="25" xoffset="0" yoffset="0" xadvance="22" page="0" chnl="22"/>
     <char id="49" x="22" y="0" width="22" height="25" xoffset="0" yoffset="0" xadvance="22" page="0" chnl="22"/>
     <char id="50" x="44" y="0" width="22" height="25" xoffset="0" yoffset="0" xadvance="22" page="0" chnl="22"/>

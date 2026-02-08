@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SDL2/SDL.h>
 #include <string>
 
 #include "game/ScoreStorage.h"
@@ -29,6 +30,8 @@ private:
     int your_score_ = 0;
     int land_index_ = 0;
     float elapsed_ = 0.0f;
+    float your_flash_timer_ = 0.0f;
+    SDL_Color your_flash_color_{0, 0, 0, 255};
 
     Button gamecenter_{};
     Button share_{};

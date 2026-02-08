@@ -12,7 +12,7 @@
 namespace {
 constexpr float kDegToRad = 3.14159265358979323846f / 180.0f;
 constexpr float kYFlip = -1.0f;
-constexpr float kLegSlotYOffset = 10.0f;
+constexpr float kLegSlotYOffset = 9.0f;
 constexpr float kHandSlotYOffset = 3.0f;
 constexpr float kHandBackXOffset = 3.0f;
 
